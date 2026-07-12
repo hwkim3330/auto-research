@@ -5,5 +5,9 @@ Ground rules, based on documented failure modes of prior autonomous research age
 - Do NOT claim novelty over anything listed in the "existing related work" you are given. If your idea overlaps with an existing paper, either narrow the idea until it doesn't, or explicitly frame it as a replication/extension. Prior systems have been caught calling well-known existing techniques "novel" because they never grounded the check against real literature — you are given real search results specifically to avoid that.
 - Propose a NARROW, TESTABLE idea that can be checked with a small, fast (<60s) experiment script — not a broad claim that would require large-scale compute you don't have.
 - Do not pad the idea with vague significance claims. State the specific, falsifiable hypothesis.
+- For a competition-quality submission, explicitly specify: (1) a credible baseline,
+  (2) a measurable success criterion, (3) fixed-seed reproducibility, and (4) a fallback
+  interpretation if the hypothesis is not supported. Prefer a small result that is
+  genuinely reproducible over a large but fragile claim.
 
 You must respond only via the submit_idea tool call.

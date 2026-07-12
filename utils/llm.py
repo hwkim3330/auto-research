@@ -7,19 +7,23 @@ back a parsed dict, never free-text they have to regex out of a response.
 import json
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 def default_model():
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
     if provider == "anthropic":
         return os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
-    return os.environ.get("OPENAI_MODEL", "gpt-5")
+    return os.environ.get("OPENAI_MODEL", "gpt-5.6-luna")
 
 
 def default_strong_model():
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
     if provider == "anthropic":
         return os.environ.get("ANTHROPIC_STRONG_MODEL", "claude-opus-4-8")
-    return os.environ.get("OPENAI_STRONG_MODEL", "gpt-5")
+    return os.environ.get("OPENAI_STRONG_MODEL", "gpt-5.6-sol")
 
 
 def call_llm(system, user, model=None, schema=None, schema_name="output", max_tokens=4096):
@@ -59,19 +63,42 @@ def _call_openai(system, user, model, schema, schema_name, max_tokens):
     from openai import OpenAI
 
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
     if schema:
-        tools = [{"type": "function", "function": {"name": schema_name, "parameters": schema}}]
-        resp = client.chat.completions.create(
+        # Responses API is the current OpenAI interface. Native structured
+        # output avoids parsing brittle free-form model text.
+        resp = client.responses.create(
             model=model or default_model(),
-            messages=messages,
-            max_completion_tokens=max_tokens,
-            tools=tools,
-            tool_choice={"type": "function", "function": {"name": schema_name}},
+            instructions=system,
+            input=user,
+            max_output_tokens=max_tokens,
+            text={
+                "format": {
+                    "type": "json_schema",
+                    "name": schema_name,
+                    "strict": True,
+                    "schema": _strict_schema(schema),
+                }
+            },
         )
-        call = resp.choices[0].message.tool_calls[0]
-        return json.loads(call.function.arguments)
-    resp = client.chat.completions.create(
-        model=model or default_model(), messages=messages, max_completion_tokens=max_tokens
+        return json.loads(resp.output_text)
+    resp = client.responses.create(
+        model=model or default_model(),
+        instructions=system,
+        input=user,
+        max_output_tokens=max_tokens,
     )
-    return resp.choices[0].message.content
+    return resp.output_text
+
+
+def _strict_schema(schema):
+    """Make the repository's compact schemas valid strict JSON schemas."""
+    schema = json.loads(json.dumps(schema))
+    if schema.get("type") == "object":
+        properties = schema.setdefault("properties", {})
+        schema["additionalProperties"] = False
+        schema["required"] = list(properties)
+        for value in properties.values():
+            _strict_schema(value)
+    elif schema.get("type") == "array" and "items" in schema:
+        _strict_schema(schema["items"])
+    return schema

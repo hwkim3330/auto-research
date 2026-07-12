@@ -13,6 +13,9 @@ IDEA_SCHEMA = {
         "proposed_method": {"type": "string"},
         "experiment_plan": {"type": "string"},
         "novelty_claim": {"type": "string"},
+        "baseline": {"type": "string"},
+        "success_criteria": {"type": "string"},
+        "risks_and_fallbacks": {"type": "string"},
     },
     "required": [
         "title",
@@ -21,6 +24,9 @@ IDEA_SCHEMA = {
         "proposed_method",
         "experiment_plan",
         "novelty_claim",
+        "baseline",
+        "success_criteria",
+        "risks_and_fallbacks",
     ],
 }
 
@@ -32,7 +38,9 @@ def generate_idea(topic, model=None):
         f"Topic: {topic}\n\n"
         "## Existing related work found via arXiv search (ground your novelty claim against "
         f"these -- do not claim novelty over anything already listed here):\n{related_block}\n\n"
-        "Propose one specific, narrow, testable research idea."
+        "Propose one specific, narrow, testable research idea. Include a strong but "
+        "simple baseline, a measurable success criterion, and a fallback if the "
+        "hypothesis fails. Optimize for a convincing, reproducible hackathon demo."
     )
     idea = call_llm(SYSTEM_PROMPT, user, model=model, schema=IDEA_SCHEMA, schema_name="submit_idea")
     idea["related_work"] = related

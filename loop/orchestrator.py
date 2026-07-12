@@ -38,17 +38,24 @@ def run_pipeline(topic, mode="loop", rounds=3, outdir="outputs"):
         log["final_paper"] = paper_md
         return _save(log, outdir)
 
+    best = {"paper": paper_md, "review": None, "round": -1}
     for i in range(rounds):
         review = review_paper(paper_md)
         log["history"].append({"round": i, "paper": paper_md, "review": review})
         print(f"[round {i}] overall={review['overall_score']} recommendation={review['recommendation']}")
+        if best["review"] is None or review["overall_score"] > best["review"]["overall_score"]:
+            best = {"paper": paper_md, "review": review, "round": i}
         if review["recommendation"] == "Accept":
             break
         paper_md = revise_paper(paper_md, review)
 
     final_review = review_paper(paper_md)
     log["history"].append({"round": len(log["history"]), "paper": paper_md, "review": final_review})
-    log["final_paper"] = paper_md
+    if final_review["overall_score"] > best["review"]["overall_score"]:
+        best = {"paper": paper_md, "review": final_review, "round": len(log["history"]) - 1}
+    log["selected_round"] = best["round"]
+    log["selected_review"] = best["review"]
+    log["final_paper"] = best["paper"]
     return _save(log, outdir)
 
 

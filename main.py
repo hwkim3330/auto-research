@@ -16,7 +16,7 @@ def main():
         default="loop",
         help="single = one-pass baseline (no critic loop); loop = generator-critic revision loop",
     )
-    parser.add_argument("--rounds", type=int, default=3, help="Max critic-revision rounds in loop mode")
+    parser.add_argument("--rounds", type=int, default=2, help="Max critic-revision rounds in loop mode")
     parser.add_argument("--outdir", default="outputs")
     args = parser.parse_args()
 

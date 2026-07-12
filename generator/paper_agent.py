@@ -11,8 +11,10 @@ CODE_SCHEMA = {
             "type": "string",
             "description": (
                 "Self-contained Python script (stdlib + numpy/pandas/sklearn only, no "
-                "network access, must finish in under 60s) that actually tests the idea "
-                "and prints every metric it wants reported, clearly labeled."
+                "network access, must finish in under 45s) that actually tests the idea. "
+                "Use fixed random seeds, compare against the requested baseline, and "
+                "print a compact RESULT_JSON object containing seed, dataset size, "
+                "baseline metrics, method metrics, and any uncertainty estimate."
             ),
         }
     },
@@ -24,8 +26,13 @@ def draft_experiment_code(idea, model=None):
     user = (
         f"Idea: {idea['title']}\n{idea['proposed_method']}\n\n"
         f"Experiment plan: {idea['experiment_plan']}\n\n"
-        "Write a small, self-contained Python script that actually tests this idea and "
-        "prints every metric it wants reported, clearly labeled."
+        f"Baseline: {idea.get('baseline', '(define a strong simple baseline)')}\n"
+        f"Success criterion: {idea.get('success_criteria', '(define a measurable criterion)')}\n\n"
+        "Write a small, self-contained Python script that actually tests this idea. "
+        "It must be deterministic, include a baseline comparison, avoid network access, "
+        "and print all reportable values clearly. End with one line beginning exactly "
+        "RESULT_JSON= followed by valid JSON containing the experiment configuration "
+        "and metrics."
     )
     result = call_llm(SYSTEM_PROMPT, user, model=model, schema=CODE_SCHEMA, schema_name="submit_code")
     return result["code"]
@@ -51,12 +58,17 @@ def write_paper(idea, model=None, strong_model=None):
     related_block = "\n".join(f"- {p['title']}" for p in idea.get("related_work", []))
     user = (
         f"# Idea\nTitle: {idea['title']}\nResearch question: {idea['research_question']}\n"
-        f"Hypothesis: {idea['hypothesis']}\nMethod: {idea['proposed_method']}\n\n"
+        f"Hypothesis: {idea['hypothesis']}\nMethod: {idea['proposed_method']}\n"
+        f"Baseline: {idea.get('baseline', '')}\n"
+        f"Success criterion: {idea.get('success_criteria', '')}\n\n"
         f"# Related work found (cite/compare against, do not claim novelty over these)\n{related_block}\n\n"
         f"{grounding}\n"
         "Write a short ICML-style paper (Abstract, Introduction, Method, Experiments, "
         "Results, Related Work, Limitations, Conclusion) in Markdown. Every number in "
-        "Results MUST come from the execution output above."
+        "Results MUST come from the execution output above. Include the baseline and "
+        "method side by side, state whether the success criterion was met, and include "
+        "a compact Reproducibility subsection with the seed and configuration. Never "
+        "turn a failed or inconclusive result into a success claim."
     )
     paper_md = call_llm(SYSTEM_PROMPT, user, model=strong_model or default_strong_model())
     return {"paper_markdown": paper_md, "experiment_code": code, "experiment_result": exec_result}

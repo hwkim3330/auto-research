@@ -13,15 +13,25 @@ want real isolation.
 """
 import os
 import subprocess
+import sys
 import tempfile
 
 
-def run_experiment(code, timeout=60):
+def run_experiment(code, timeout=45):
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
         f.write(code)
         path = f.name
     try:
-        result = subprocess.run(["python3", path], capture_output=True, text=True, timeout=timeout)
+        # Use the active venv interpreter, isolate the working directory, and
+        # cap captured output so a runaway generated script cannot flood logs.
+        result = subprocess.run(
+            [sys.executable, "-I", path],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=os.path.dirname(path),
+            env={"PATH": os.environ.get("PATH", ""), "PYTHONHASHSEED": "0"},
+        )
         return {
             "success": result.returncode == 0,
             "stdout": result.stdout[-8000:],

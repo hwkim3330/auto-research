@@ -51,22 +51,37 @@ A literature/benchmark sweep (2025-2026) before building this turned up hard fai
 ## Setup
 
 ```bash
-pip install -r requirements.txt
-cp .env.example .env   # fill in ANTHROPIC_API_KEY or OPENAI_API_KEY
-export $(cat .env | xargs)   # or use direnv / python-dotenv
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+cp .env.example .env   # fill in OPENAI_API_KEY or ANTHROPIC_API_KEY
 ```
+
+The default OpenAI path uses the Responses API with strict structured outputs. The
+default model is the fast GPT-5.6 Luna tier and the final synthesis uses GPT-5.6 Sol;
+override them in `.env` if the event account exposes different models.
 
 ## Usage
 
 ```bash
-# Full generator-critic loop (the default)
-python main.py --topic "Adaptive learning rate scheduling for small-batch SGD" --mode loop --rounds 3
+# Competition path: generate, execute, review, revise, then keep the best-scoring draft
+./run_competition.sh "Adaptive learning rate scheduling for small-batch SGD"
+
+# Full generator-critic loop (manual form)
+python main.py --topic "Adaptive learning rate scheduling for small-batch SGD" --mode loop --rounds 2
 
 # One-pass baseline, for the ablation comparison against the loop above
 python main.py --topic "Adaptive learning rate scheduling for small-batch SGD" --mode single
 ```
 
 Each run writes `outputs/paper_<timestamp>.md` (final paper) and `outputs/run_<timestamp>.json` (full history: idea, related work, experiment code + real execution output, every review round with sub-scores).
+
+## Competition design
+
+- Ideas must include a credible baseline, falsifiable success criterion, and fallback interpretation.
+- Generated experiments use fixed seeds, compare baseline against method, and emit a `RESULT_JSON` evidence line.
+- The runner uses the active virtual environment, a clean working directory, a timeout, and a reduced environment.
+- The loop evaluates every draft and selects the highest-scoring paper rather than blindly returning the last revision.
+- Failed or inconclusive experiments remain explicit in the paper; unsupported numbers are never added to improve a score.
 
 ## Safety note
 
