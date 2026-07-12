@@ -6,6 +6,8 @@ back a parsed dict, never free-text they have to regex out of a response.
 """
 import json
 import os
+import urllib.error
+import urllib.request
 
 from dotenv import load_dotenv
 
@@ -14,6 +16,8 @@ load_dotenv()
 
 def default_model():
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
+    if provider == "ollama":
+        return os.environ.get("OLLAMA_MODEL", "qwen3.6:27b")
     if provider == "anthropic":
         return os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
     return os.environ.get("OPENAI_MODEL", "gpt-5.6-luna")
@@ -21,6 +25,8 @@ def default_model():
 
 def default_strong_model():
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
+    if provider == "ollama":
+        return os.environ.get("OLLAMA_STRONG_MODEL", "qwen3.6:27b")
     if provider == "anthropic":
         return os.environ.get("ANTHROPIC_STRONG_MODEL", "claude-opus-4-8")
     return os.environ.get("OPENAI_STRONG_MODEL", "gpt-5.6-sol")
@@ -29,6 +35,8 @@ def default_strong_model():
 def default_middle_model():
     """Balanced model for code generation and revision passes."""
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
+    if provider == "ollama":
+        return os.environ.get("OLLAMA_MIDDLE_MODEL", "gemma4:e4b-mlx")
     if provider == "anthropic":
         return os.environ.get("ANTHROPIC_MIDDLE_MODEL", default_model())
     return os.environ.get("OPENAI_MIDDLE_MODEL", "gpt-5.6-terra")
@@ -40,7 +48,9 @@ def call_llm(system, user, model=None, schema=None, schema_name="output", max_to
         return _call_anthropic(system, user, model, schema, schema_name, max_tokens)
     if provider == "openai":
         return _call_openai(system, user, model, schema, schema_name, max_tokens)
-    raise ValueError(f"Unknown LLM_PROVIDER: {provider!r} (expected 'anthropic' or 'openai')")
+    if provider == "ollama":
+        return _call_ollama(system, user, model, schema, max_tokens)
+    raise ValueError(f"Unknown LLM_PROVIDER: {provider!r} (expected 'anthropic', 'openai', or 'ollama')")
 
 
 def _call_anthropic(system, user, model, schema, schema_name, max_tokens):
@@ -96,6 +106,60 @@ def _call_openai(system, user, model, schema, schema_name, max_tokens):
         max_output_tokens=max_tokens,
     )
     return resp.output_text
+
+
+def _call_ollama(system, user, model, schema, max_tokens):
+    """Call a local Ollama model without requiring any cloud API key."""
+    payload = {
+        "model": model or default_model(),
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+        "stream": False,
+        "options": {"temperature": 0},
+    }
+    if schema:
+        payload["format"] = _strict_schema(schema)
+    request = urllib.request.Request(
+        os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434") + "/api/chat",
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    result = _ollama_request(request)
+    content = result.get("message", {}).get("content", "")
+    if schema:
+        try:
+            return json.loads(content)
+        except json.JSONDecodeError:
+            # Some local models honor JSON mode but not the full schema. Retry
+            # once with a compact schema instruction rather than failing the run.
+            payload["format"] = "json"
+            payload["messages"][0]["content"] += (
+                "\nReturn ONLY one valid JSON object matching this schema, with no prose:\n"
+                + json.dumps(_strict_schema(schema))
+            )
+            retry = urllib.request.Request(
+                os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434") + "/api/chat",
+                data=json.dumps(payload).encode(),
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            retry_content = _ollama_request(retry).get("message", {}).get("content", "")
+            try:
+                return json.loads(retry_content)
+            except json.JSONDecodeError as exc:
+                raise RuntimeError(f"Ollama returned non-JSON structured output: {retry_content[:500]}") from exc
+    return content
+
+
+def _ollama_request(request):
+    try:
+        with urllib.request.urlopen(request, timeout=180) as response:
+            return json.loads(response.read())
+    except urllib.error.URLError as exc:
+        raise RuntimeError("Ollama is not reachable. Start it with `ollama serve`.") from exc
 
 
 def _strict_schema(schema):

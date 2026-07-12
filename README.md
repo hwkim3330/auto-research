@@ -56,10 +56,10 @@ python3 -m venv .venv
 cp .env.example .env   # fill in OPENAI_API_KEY or ANTHROPIC_API_KEY
 ```
 
-The default OpenAI path uses the Responses API with strict structured outputs. Models
-are deliberately tiered: GPT-5.6 Luna handles high-volume idea/review calls, GPT-5.6
-Terra handles experiment-code and revision calls, and GPT-5.6 Sol performs final
-synthesis. Override them in `.env` if the event account exposes different models.
+The default local path uses Ollama, so no cloud API key is required. Models are
+deliberately tiered: Qwen3.6 handles ideas and final synthesis, while Gemma 4 handles
+experiment-code and revision calls. If the event supplies OpenAI credits, switch
+`LLM_PROVIDER` to `openai` and use the GPT-5.6 settings below.
 
 ## Usage
 
