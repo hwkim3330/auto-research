@@ -72,6 +72,9 @@ python main.py --topic "Adaptive learning rate scheduling for small-batch SGD" -
 
 # One-pass baseline, for the ablation comparison against the loop above
 python main.py --topic "Adaptive learning rate scheduling for small-batch SGD" --mode single
+
+# Track 2: put the ten assigned papers in papers/ and review them concurrently
+python review_batch.py papers --workers 5
 ```
 
 Each run writes `outputs/paper_<timestamp>.md` (final paper), `outputs/paper_<timestamp>.pdf` (OpenReview-ready PDF), and `outputs/run_<timestamp>.json` (full history: idea, related work, experiment code + real execution output, every review round with sub-scores).
@@ -83,6 +86,7 @@ Each run writes `outputs/paper_<timestamp>.md` (final paper), `outputs/paper_<ti
 - The runner uses the active virtual environment, a clean working directory, a timeout, and a reduced environment.
 - The loop evaluates every draft and selects the highest-scoring paper rather than blindly returning the last revision.
 - Failed or inconclusive experiments remain explicit in the paper; unsupported numbers are never added to improve a score.
+- Track 2 accepts a directory of PDFs and produces one JSON/Markdown review bundle with bounded parallelism for the 30-minute review window.
 
 ## Safety note
 
