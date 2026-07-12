@@ -5,6 +5,7 @@ import re
 import xml.etree.ElementTree as ET
 
 import markdown
+from pypdf import PdfReader
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -30,7 +31,7 @@ def _plain(text):
     return re.sub(r"\s+", " ", "".join(text.itertext())).strip()
 
 
-def render_pdf(markdown_text, pdf_path, title="Auto Research Submission"):
+def render_pdf(markdown_text, pdf_path, title="Auto Research Submission", max_pages=4):
     """Render a generated paper into a readable A4 PDF and return its path."""
     font = _register_font()
     styles = getSampleStyleSheet()
@@ -67,4 +68,7 @@ def render_pdf(markdown_text, pdf_path, title="Auto Research Submission"):
     os.makedirs(os.path.dirname(os.path.abspath(pdf_path)), exist_ok=True)
     doc = SimpleDocTemplate(str(pdf_path), pagesize=A4, rightMargin=18 * mm, leftMargin=18 * mm, topMargin=16 * mm, bottomMargin=16 * mm, title=title, author="Auto Research")
     doc.build(story)
+    page_count = len(PdfReader(str(pdf_path)).pages)
+    if page_count > max_pages:
+        raise ValueError(f"Generated PDF has {page_count} pages; maximum allowed is {max_pages}.")
     return pdf_path

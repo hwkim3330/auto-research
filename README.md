@@ -78,6 +78,7 @@ python review_batch.py papers --workers 5
 ```
 
 Each run writes `outputs/paper_<timestamp>.md` (final paper), `outputs/paper_<timestamp>.pdf` (OpenReview-ready PDF), and `outputs/run_<timestamp>.json` (full history: idea, related work, experiment code + real execution output, every review round with sub-scores).
+The PDF renderer enforces a four-page maximum and the paper prompt targets a concise English submission. The public event page does not currently publish a separate language or PDF-template rule, so confirm the final venue form with the host.
 
 ## Competition design
 
