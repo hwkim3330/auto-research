@@ -119,7 +119,11 @@ def _call_ollama(system, user, model, schema, max_tokens):
             {"role": "user", "content": user},
         ],
         "stream": False,
-        "options": {"temperature": 0, "num_predict": max_tokens},
+        "options": {
+            "temperature": 0,
+            "num_ctx": int(os.environ.get("OLLAMA_NUM_CTX", "32768")),
+            "num_predict": max_tokens,
+        },
     }
     if schema:
         payload["format"] = _strict_schema(schema)

@@ -113,5 +113,5 @@ def write_paper(idea, model=None, strong_model=None):
         "a compact Reproducibility subsection with the seed and configuration. Never "
         "turn a failed or inconclusive result into a success claim."
     )
-    paper_md = call_llm(SYSTEM_PROMPT, user, model=strong_model or default_strong_model())
+    paper_md = call_llm(SYSTEM_PROMPT, user, model=strong_model or default_strong_model(), max_tokens=2200)
     return {"paper_markdown": paper_md, "experiment_code": code, "experiment_result": exec_result}

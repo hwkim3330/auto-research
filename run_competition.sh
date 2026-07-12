@@ -15,4 +15,4 @@ if [[ ! -f "$ROOT/.env" ]]; then
 fi
 
 cd "$ROOT"
-exec .venv/bin/python main.py --topic "$TOPIC" --mode loop --rounds 2
+exec .venv/bin/python main.py --topic "$TOPIC" --mode loop --rounds 1

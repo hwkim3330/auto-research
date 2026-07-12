@@ -15,4 +15,4 @@ def revise_paper(paper_markdown, review, model=None):
         f"Questions: {review['questions_for_authors']}\n\n"
         "Revise the paper to address the weaknesses and questions above."
     )
-    return call_llm(SYSTEM_PROMPT, user, model=model or default_middle_model())
+    return call_llm(SYSTEM_PROMPT, user, model=model or default_middle_model(), max_tokens=1800)

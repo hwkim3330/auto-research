@@ -42,7 +42,7 @@ def generate_idea(topic, model=None):
         "simple baseline, a measurable success criterion, and a fallback if the "
         "hypothesis fails. Optimize for a convincing, reproducible hackathon demo."
     )
-    idea = call_llm(SYSTEM_PROMPT, user, model=model, schema=IDEA_SCHEMA, schema_name="submit_idea")
+    idea = call_llm(SYSTEM_PROMPT, user, model=model, schema=IDEA_SCHEMA, schema_name="submit_idea", max_tokens=900)
     required = IDEA_SCHEMA["required"]
     missing = [key for key in required if not idea.get(key)]
     if missing:
@@ -54,7 +54,7 @@ def generate_idea(topic, model=None):
             "object with every key exactly as spelled here, with non-empty string values: "
             + ", ".join(required)
         )
-        idea = call_llm(SYSTEM_PROMPT, retry_user, model=model, schema=IDEA_SCHEMA, schema_name="submit_idea")
+        idea = call_llm(SYSTEM_PROMPT, retry_user, model=model, schema=IDEA_SCHEMA, schema_name="submit_idea", max_tokens=900)
         missing = [key for key in required if not idea.get(key)]
         if missing:
             raise RuntimeError(f"Idea model omitted required fields after retry: {missing}")
