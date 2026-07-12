@@ -18,6 +18,7 @@ from generator.idea_agent import generate_idea
 from generator.paper_agent import write_paper
 from generator.revise_agent import revise_paper
 from reviewer.review_agent import review_paper
+from utils.pdf import render_pdf
 
 
 def run_pipeline(topic, mode="loop", rounds=3, outdir="outputs"):
@@ -67,6 +68,9 @@ def _save(log, outdir):
     md_path = os.path.join(outdir, f"paper_{stamp}.md")
     with open(md_path, "w") as f:
         f.write(log["final_paper"])
+    pdf_path = os.path.join(outdir, f"paper_{stamp}.pdf")
+    render_pdf(log["final_paper"], pdf_path, title=log.get("idea", {}).get("title", "Auto Research Submission"))
     print(f"Saved run log to {json_path}")
     print(f"Saved final paper to {md_path}")
+    print(f"Saved OpenReview PDF to {pdf_path}")
     return log

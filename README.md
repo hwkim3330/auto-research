@@ -74,7 +74,7 @@ python main.py --topic "Adaptive learning rate scheduling for small-batch SGD" -
 python main.py --topic "Adaptive learning rate scheduling for small-batch SGD" --mode single
 ```
 
-Each run writes `outputs/paper_<timestamp>.md` (final paper) and `outputs/run_<timestamp>.json` (full history: idea, related work, experiment code + real execution output, every review round with sub-scores).
+Each run writes `outputs/paper_<timestamp>.md` (final paper), `outputs/paper_<timestamp>.pdf` (OpenReview-ready PDF), and `outputs/run_<timestamp>.json` (full history: idea, related work, experiment code + real execution output, every review round with sub-scores).
 
 ## Competition design
 

@@ -5,4 +5,5 @@ venv/
 .venv/
 outputs/*.json
 outputs/*.md
+outputs/*.pdf
 !outputs/.gitkeep
