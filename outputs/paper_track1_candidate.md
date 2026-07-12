@@ -1,8 +1,8 @@
-# Confidence-Weighted Mini-Batch Updates Improve Training Stability Without Improving Test Error
+# Gradient-Norm Damping Stabilizes Mini-Batch Training but Does Not Improve Test Error
 
 ## Abstract
 
-Small-batch stochastic optimization can produce noisy updates. We test a simple confidence-weighted update rule that scales each mini-batch gradient by the inverse of one plus its norm. On a fixed synthetic linear-regression task, the method slightly reduces the standard deviation of the final training-loss trajectory, but does not improve held-out test mean-squared error. The result is a reproducible partial negative: the stability hypothesis receives limited support, while the generalization hypothesis does not.
+Small-batch stochastic optimization can produce noisy updates. We test a simple gradient-norm damping rule that scales each mini-batch update by the inverse of one plus its norm. On a fixed synthetic linear-regression task, damping reduces the standard deviation of the final training-loss trajectory from 0.000086 to 0.000077, but increases held-out test mean-squared error from 0.138566 to 0.139685. The result is a reproducible partial negative: the stability hypothesis receives limited support, while the generalization hypothesis does not.
 
 ## Introduction
 
