@@ -7,6 +7,7 @@ from pathlib import Path
 from pypdf import PdfReader
 
 from reviewer.review_agent import review_paper
+from utils.pdf import render_pdf
 
 
 def extract_pdf(path):
@@ -64,8 +65,11 @@ def run_batch(input_dir, output_dir, workers=5):
             "",
         ])
     md_path.write_text("\n".join(lines))
+    pdf_path = output_dir / "batch_reviews.pdf"
+    render_pdf("\n".join(lines), pdf_path, title="Track 2 Review Agent Submission")
     print(f"Saved {json_path}")
     print(f"Saved {md_path}")
+    print(f"Saved {pdf_path}")
 
 
 if __name__ == "__main__":

@@ -86,7 +86,7 @@ Each run writes `outputs/paper_<timestamp>.md` (final paper), `outputs/paper_<ti
 - The runner uses the active virtual environment, a clean working directory, a timeout, and a reduced environment.
 - The loop evaluates every draft and selects the highest-scoring paper rather than blindly returning the last revision.
 - Failed or inconclusive experiments remain explicit in the paper; unsupported numbers are never added to improve a score.
-- Track 2 accepts a directory of PDFs and produces one JSON/Markdown review bundle with bounded parallelism for the 30-minute review window.
+- Track 2 accepts a directory of PDFs and produces one JSON/Markdown/PDF review bundle with bounded parallelism for the 30-minute review window.
 
 ## Safety note
 
