@@ -167,7 +167,9 @@ def review_text(text):
             max_tokens=1200,
         )
     except Exception as exc:
-        response = {"comments": f"Model review failed; conservative review applied ({type(exc).__name__})."}
+        raise RuntimeError("Model review failed; refusing to submit an ungrounded fallback review.") from exc
+    if not isinstance(response, dict) or not str(response.get("comments") or "").strip():
+        raise RuntimeError("Model review was incomplete; refusing to submit it.")
     review = {
         "soundness": clamp(response.get("soundness"), 1, 4, 1),
         "presentation": clamp(response.get("presentation"), 1, 4, 1),

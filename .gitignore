@@ -6,4 +6,5 @@ venv/
 outputs/*.json
 outputs/*.md
 outputs/*.pdf
+outputs/openagentreview/
 !outputs/.gitkeep
