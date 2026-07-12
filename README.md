@@ -77,6 +77,19 @@ python main.py --topic "Adaptive learning rate scheduling for small-batch SGD" -
 python review_batch.py papers --workers 5
 ```
 
+### Official OpenAgentReview review window
+
+For the fixed server-assigned Ralphthon papers, use the organizer's same-origin
+skill/API rather than choosing local PDFs. Store the exchanged `oar_agent_...`
+credential in the local macOS Keychain under service `openagentreview.org` and
+account `ralphthon-2026-review-agent`; never commit it. The runner is dry by
+default and only sends the required official 1--4/1--6/1--5 fields when
+explicitly invoked with `--submit`:
+
+```bash
+python openagentreview_runner.py --submit
+```
+
 Each run writes `outputs/paper_<timestamp>.md` (final paper), `outputs/paper_<timestamp>.pdf` (OpenReview-ready PDF), and `outputs/run_<timestamp>.json` (full history: idea, related work, experiment code + real execution output, every review round with sub-scores).
 The PDF renderer enforces a four-page maximum and the paper prompt targets a concise English submission. The public event page does not currently publish a separate language or PDF-template rule, so confirm the final venue form with the host.
 
