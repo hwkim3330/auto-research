@@ -131,7 +131,7 @@ def _call_ollama(system, user, model, schema, max_tokens):
     content = result.get("message", {}).get("content", "")
     if schema:
         try:
-            return json.loads(content)
+            return _parse_json_content(content)
         except json.JSONDecodeError:
             # Some local models honor JSON mode but not the full schema. Retry
             # once with a compact schema instruction rather than failing the run.
@@ -148,7 +148,7 @@ def _call_ollama(system, user, model, schema, max_tokens):
             )
             retry_content = _ollama_request(retry).get("message", {}).get("content", "")
             try:
-                return json.loads(retry_content)
+                return _parse_json_content(retry_content)
             except json.JSONDecodeError as exc:
                 raise RuntimeError(f"Ollama returned non-JSON structured output: {retry_content[:500]}") from exc
     return content
@@ -160,6 +160,15 @@ def _ollama_request(request):
             return json.loads(response.read())
     except urllib.error.URLError as exc:
         raise RuntimeError("Ollama is not reachable. Start it with `ollama serve`.") from exc
+
+
+def _parse_json_content(content):
+    """Accept strict JSON plus the Markdown fences local models often add."""
+    cleaned = content.strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned
+        cleaned = cleaned.rsplit("```", 1)[0].strip()
+    return json.loads(cleaned)
 
 
 def _strict_schema(schema):
