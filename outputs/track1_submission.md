@@ -2,7 +2,7 @@
 
 ## Abstract
 
-Autonomous research agents can execute experiments yet still report unsupported numerical claims when converting logs into papers. We introduce an evidence lock that treats subprocess output as a typed ledger and permits a numerical claim only when its metric identity and value match recorded evidence. A 1,000-claim synthetic ablation compares no gate, exact-string matching, and tolerance-aware normalized matching. With no gate, all 201 unsupported claims are accepted. Exact matching rejects every unsupported claim but recalls only 77.22% of supported claims because harmless rounding changes the string representation. The normalized gate achieves 99.75% precision and 100% supported-claim recall while accepting 1.00% of unsupported claims. The result identifies a practical safety-quality trade-off and yields a small, auditable component for generator-reviewer research loops.
+Autonomous research agents can execute experiments yet still report unsupported numerical claims when converting logs into papers. We introduce an evidence lock that treats subprocess output as a typed ledger and permits a numerical claim only when its metric identity and value match recorded evidence. A 30-seed, 30,000-claim synthetic ablation compares no gate, exact-string matching, and tolerance-aware normalized matching. Exact matching rejects every unsupported claim but recalls only 75.21% (+/-0.62% 95% CI) of supported claims because harmless rounding changes the string representation. The normalized gate achieves 99.59% (+/-0.07%) precision and 100% supported-claim recall while accepting 1.68% (+/-0.29%) of unsupported claims. This identifies a reproducible safety-quality trade-off and yields a small, auditable component for generator-reviewer research loops.
 
 ## 1. Introduction
 
@@ -22,17 +22,17 @@ The normalized gate is intentionally small and deterministic. It does not judge 
 
 ## 3. Experimental Design
 
-Using seed 42, we create 40 evidence metrics and 1,000 candidate claims. The realized sample contains 799 supported and 201 unsupported claims. Supported claims are either exact or rounded representations of ledger values. Unsupported claims are perturbed values attached to a valid metric or unrelated values. We report precision among accepted claims, recall of supported claims, and the acceptance rate of unsupported claims. The complete experiment is implemented in `experiments/evidence_lock_ablation.py`.
+For each of 30 fixed seeds, we create 40 evidence metrics and 1,000 candidate claims, giving 30,000 claims in total: 23,987 supported and 6,013 unsupported. Supported claims are exact or rounded representations of ledger values; unsupported claims are perturbed values attached to a valid metric or unrelated values. We report the across-seed mean and 95% confidence interval (1.96 standard errors) for precision among accepted claims, recall of supported claims, and unsupported-claim acceptance. The complete deterministic experiment is implemented in `experiments/evidence_lock_ablation.py`.
 
 ## 4. Results
 
 | Policy | Precision | Supported recall | Unsupported accepted |
 |---|---:|---:|---:|
-| No gate | 79.90% | 100.00% | 100.00% |
-| Exact string gate | 100.00% | 77.22% | 0.00% |
-| Normalized evidence gate | 99.75% | 100.00% | 1.00% |
+| No gate | 79.96 +/- 0.38% | 100.00 +/- 0.00% | 100.00 +/- 0.00% |
+| Exact string gate | 100.00 +/- 0.00% | 75.21 +/- 0.62% | 0.00 +/- 0.00% |
+| Normalized evidence gate | 99.59 +/- 0.07% | 100.00 +/- 0.00% | 1.68 +/- 0.29% |
 
-The no-gate baseline preserves every supported claim but also accepts every unsupported claim. Exact matching eliminates unsupported values, yet rejects 182 supported rounded claims. Normalized matching restores full supported recall and reduces unsupported acceptance from 100.00% to 1.00%; its remaining errors arise when a perturbation falls inside the declared tolerance.
+The no-gate baseline accepts all 6,013 unsupported claims. Exact matching eliminates those errors but rejects 5,947 supported rounded claims. Normalized matching accepts every supported claim and rejects 5,913 of 6,013 unsupported claims; its 100 residual errors occur when a perturbation falls inside the declared tolerance. The confidence intervals show that the trade-off persists across seeds rather than depending on one favorable sample.
 
 ## 5. Integration into an Autonomous Research Loop
 
@@ -46,10 +46,9 @@ The benchmark is synthetic and isolates numerical provenance rather than full sc
 
 ## 7. Conclusion
 
-Evidence locking turns a vague instruction - “do not hallucinate numbers” - into a measurable control. Exact matching is safe but brittle; normalized matching preserves rounded claims while rejecting 199 of 201 unsupported claims in this ablation. The component is deliberately modest, reproducible, and suitable for deployment inside an autonomous paper-generation loop.
+Evidence locking turns a vague instruction - “do not hallucinate numbers” - into a measurable control. Exact matching is safe but brittle; normalized matching preserves rounded claims while rejecting 98.32% of unsupported claims across 30 seeds. The component is deliberately modest, reproducible, and suitable for deployment inside an autonomous paper-generation loop.
 
 ## References
 
 1. Lu et al. *The AI Scientist: Towards Fully Automated Open-Ended Scientific Discovery*. arXiv:2408.06292, 2024.
 2. Kapoor et al. *AI Agents That Matter*. arXiv:2407.01502, 2024.
-

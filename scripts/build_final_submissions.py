@@ -55,7 +55,7 @@ def results_chart(track):
     chart = VerticalBarChart()
     chart.x, chart.y, chart.width, chart.height = 52, 35, 380, 95
     if track == 1:
-        chart.data = [(100.0, 0.0, 1.0), (100.0, 77.22, 100.0)]
+        chart.data = [(100.0, 0.0, 1.68), (100.0, 75.21, 100.0)]
         chart.categoryAxis.categoryNames = ["No gate", "Exact", "Normalized"]
         chart.bars[0].fillColor = colors.HexColor("#D95D39")
         chart.bars[1].fillColor = TEAL
