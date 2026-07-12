@@ -56,10 +56,10 @@ python3 -m venv .venv
 cp .env.example .env   # fill in OPENAI_API_KEY or ANTHROPIC_API_KEY
 ```
 
-The default local path uses Ollama, so no cloud API key is required. Models are
-deliberately tiered: Qwen3.6 handles ideas and final synthesis, while Gemma 4 handles
-experiment-code and revision calls. If the event supplies OpenAI credits, switch
-`LLM_PROVIDER` to `openai` and use the GPT-5.6 settings below.
+The default local path uses one Ollama Gemma 4 model for every stage, so no cloud API
+key is required and there is no model-switch overhead. This is the safest event setup;
+if the event supplies OpenAI credits, switch `LLM_PROVIDER` to `openai` and use the
+GPT-5.6 settings below.
 
 ## Usage
 

@@ -17,7 +17,7 @@ load_dotenv()
 def default_model():
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
     if provider == "ollama":
-        return os.environ.get("OLLAMA_MODEL", "qwen3.6:27b")
+        return os.environ.get("OLLAMA_MODEL", "gemma4:e4b-mlx")
     if provider == "anthropic":
         return os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-5")
     return os.environ.get("OPENAI_MODEL", "gpt-5.6-luna")
@@ -26,7 +26,7 @@ def default_model():
 def default_strong_model():
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
     if provider == "ollama":
-        return os.environ.get("OLLAMA_STRONG_MODEL", "qwen3.6:27b")
+        return os.environ.get("OLLAMA_STRONG_MODEL", "gemma4:e4b-mlx")
     if provider == "anthropic":
         return os.environ.get("ANTHROPIC_STRONG_MODEL", "claude-opus-4-8")
     return os.environ.get("OPENAI_STRONG_MODEL", "gpt-5.6-sol")
