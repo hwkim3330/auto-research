@@ -9,6 +9,8 @@ import os
 import urllib.error
 import urllib.request
 
+from json_repair import repair_json
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -117,7 +119,7 @@ def _call_ollama(system, user, model, schema, max_tokens):
             {"role": "user", "content": user},
         ],
         "stream": False,
-        "options": {"temperature": 0},
+        "options": {"temperature": 0, "num_predict": max_tokens},
     }
     if schema:
         payload["format"] = _strict_schema(schema)
@@ -131,7 +133,7 @@ def _call_ollama(system, user, model, schema, max_tokens):
     content = result.get("message", {}).get("content", "")
     if schema:
         try:
-            return _parse_json_content(content)
+            return _coerce_schema_result(_parse_json_content(content), schema)
         except json.JSONDecodeError:
             # Some local models honor JSON mode but not the full schema. Retry
             # once with a compact schema instruction rather than failing the run.
@@ -148,7 +150,7 @@ def _call_ollama(system, user, model, schema, max_tokens):
             )
             retry_content = _ollama_request(retry).get("message", {}).get("content", "")
             try:
-                return _parse_json_content(retry_content)
+                return _coerce_schema_result(_parse_json_content(retry_content), schema)
             except json.JSONDecodeError as exc:
                 raise RuntimeError(f"Ollama returned non-JSON structured output: {retry_content[:500]}") from exc
     return content
@@ -168,7 +170,23 @@ def _parse_json_content(content):
     if cleaned.startswith("```"):
         cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned
         cleaned = cleaned.rsplit("```", 1)[0].strip()
-    return json.loads(cleaned)
+    try:
+        return json.loads(cleaned)
+    except json.JSONDecodeError:
+        # Local models sometimes emit LaTeX backslashes or trailing commas
+        # inside otherwise valid JSON. Repair only after strict parsing fails.
+        return json.loads(repair_json(cleaned))
+
+
+def _coerce_schema_result(result, schema):
+    """Normalize common local-model mistakes in simple object schemas."""
+    if schema.get("type") == "object" and isinstance(result, list):
+        if len(result) == 1 and isinstance(result[0], dict):
+            result = result[0]
+        elif len(schema.get("properties", {})) == 1 and result and isinstance(result[0], str):
+            key = next(iter(schema["properties"]))
+            result = {key: result[0]}
+    return result
 
 
 def _strict_schema(schema):

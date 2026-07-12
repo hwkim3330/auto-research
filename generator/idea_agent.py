@@ -43,5 +43,20 @@ def generate_idea(topic, model=None):
         "hypothesis fails. Optimize for a convincing, reproducible hackathon demo."
     )
     idea = call_llm(SYSTEM_PROMPT, user, model=model, schema=IDEA_SCHEMA, schema_name="submit_idea")
+    required = IDEA_SCHEMA["required"]
+    missing = [key for key in required if not idea.get(key)]
+    if missing:
+        # Small local models occasionally omit fields despite JSON mode. A
+        # targeted retry is cheaper and safer than letting a partial idea
+        # crash the whole submission run later.
+        retry_user = user + (
+            "\n\nIMPORTANT: your previous response omitted required fields. Return a complete "
+            "object with every key exactly as spelled here, with non-empty string values: "
+            + ", ".join(required)
+        )
+        idea = call_llm(SYSTEM_PROMPT, retry_user, model=model, schema=IDEA_SCHEMA, schema_name="submit_idea")
+        missing = [key for key in required if not idea.get(key)]
+        if missing:
+            raise RuntimeError(f"Idea model omitted required fields after retry: {missing}")
     idea["related_work"] = related
     return idea
