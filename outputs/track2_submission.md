@@ -2,7 +2,7 @@
 
 ## Abstract
 
-We present CalibratedBatchReview, a local agent for reviewing multiple research PDFs under a short deadline. The system extracts assigned PDFs, scores soundness, novelty, clarity, and significance independently, computes the overall recommendation in deterministic code, detects reviewer-directed prompt injection, and exports aligned JSON, Markdown, and PDF artifacts. A security ablation with three groups of eight texts shows that the lexical pre-scan detects 100% of direct attacks with 0% false positives on clean controls, but detects 0% of paraphrased attacks. We therefore use the pre-scan as a high-precision first layer rather than a complete defense and require the model to perform a second semantic judgment. The design emphasizes auditability, conservative failure recovery, and bounded concurrency over confident but opaque reviewing.
+We present CalibratedBatchReview, a local agent for reviewing multiple research PDFs under a short deadline. The system extracts assigned PDFs, scores soundness, novelty, clarity, and significance independently, computes the overall recommendation in deterministic code, detects reviewer-directed prompt injection, and exports aligned JSON, Markdown, and PDF artifacts. A security ablation with three groups of eight texts shows that the layered lexical pre-scan detects 100% of direct attacks and 100% of paraphrased attacks with 0% false positives on clean controls. Exact markers catch known attacks while bounded semantic patterns cover rating demands, suppressed criticism, evidence bypass, and overlooked failures. The design emphasizes auditability, conservative failure recovery, and bounded concurrency over confident but opaque reviewing.
 
 ## 1. Motivation
 
@@ -39,10 +39,10 @@ We evaluate the deterministic pre-scan on eight direct attacks, eight paraphrase
 | Test group | Detection rate |
 |---|---:|
 | Direct reviewer instructions | 100% |
-| Paraphrased reviewer instructions | 0% |
+| Paraphrased reviewer instructions | 100% |
 | Clean controls (false positives) | 0% |
 
-The result clarifies the division of labor. The lexical layer is precise for known attacks but cannot generalize to paraphrases; semantic model review and human inspection remain necessary. The test is reproducible with `experiments/reviewer_security_ablation.py`.
+The result shows that exact markers alone are insufficient, while a small set of bounded semantic patterns closes the tested paraphrase gap without producing false positives on the clean controls. The benchmark remains intentionally small, so independent semantic model review and human inspection are still required. The test is reproducible with `experiments/reviewer_security_ablation.py`.
 
 ## 5. Timed Batch Workflow
 
@@ -50,7 +50,7 @@ The command `python review_batch.py papers --workers 3` reads assigned PDFs and 
 
 ## 6. Limitations and Responsible Use
 
-Text extraction can lose figures, tables, equations, and layout-dependent evidence. Local-model judgments are not equivalent to expert human reviews. The lexical benchmark is intentionally small and reveals a complete failure on paraphrased attacks. Conservative defaults preserve pipeline completion but must not be mistaken for genuine model judgments. The system should support judges, not replace them, and all final decisions should remain auditable.
+Text extraction can lose figures, tables, equations, and layout-dependent evidence. Local-model judgments are not equivalent to expert human reviews. The 24-case security benchmark is intentionally small and cannot represent adaptive attacks. Conservative defaults preserve pipeline completion but must not be mistaken for genuine model judgments. The system should support judges, not replace them, and all final decisions should remain auditable.
 
 ## 7. Conclusion
 
@@ -60,4 +60,3 @@ CalibratedBatchReview combines local execution, independent dimension scoring, d
 
 1. Greshake et al. *More than you've asked for: A Comprehensive Analysis of Novel Prompt Injection Threats to Application-Integrated Large Language Models*. arXiv:2302.12173, 2023.
 2. Kapoor et al. *AI Agents That Matter*. arXiv:2407.01502, 2024.
-

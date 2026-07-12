@@ -61,7 +61,7 @@ def results_chart(track):
         chart.bars[1].fillColor = TEAL
         title = "Unsupported acceptance vs. supported recall (%)"
     else:
-        chart.data = [(100.0, 0.0, 0.0)]
+        chart.data = [(100.0, 100.0, 0.0)]
         chart.categoryAxis.categoryNames = ["Direct", "Paraphrased", "Clean FP"]
         chart.bars[0].fillColor = BLUE
         title = "Lexical injection pre-scan detection rate (%)"

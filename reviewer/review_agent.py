@@ -1,3 +1,5 @@
+import re
+
 from reviewer.rubric import REVIEW_SCHEMA, compute_overall, recommendation_from_score
 from utils.llm import call_llm
 from utils.prompts import load_prompt
@@ -15,6 +17,16 @@ SUSPICIOUS_MARKERS = [
     "disregard all prior instructions",
 ]
 
+SUSPICIOUS_PATTERNS = [
+    ("unquestionable-correctness", r"\bunquestionably\s+correct\b"),
+    ("maximum-rating", r"\b(highest|maximum|perfect)\s+(possible\s+)?(rating|score)\b"),
+    ("suppress-critique", r"\b(avoid|omit|skip|do\s+not|don't)\b.{0,40}\b(criticism|critique|limitations?|weaknesses?)\b"),
+    ("evidence-bypass", r"\b(regardless\s+of|without\s+regard\s+to)\b.{0,30}\bevidence\b"),
+    ("forced-favorable-decision", r"\b(favou?rable|positive)\s+(decision|recommendation)\b.{0,30}\b(required|mandatory|must)\b"),
+    ("praise-only", r"\b(only\s+praise|praise\s+only|contain\s+only\s+praise)\b"),
+    ("overlook-failures", r"\b(overlook|ignore|dismiss)\b.{0,40}\b(failed|failure|errors?)\b"),
+]
+
 
 def sanitize_paper_text(text):
     """Best-effort heuristic pre-scan for reviewer-directed prompt injection.
@@ -26,7 +38,9 @@ def sanitize_paper_text(text):
     reviewer-manipulation misconduct.
     """
     lower = text.lower()
-    return [m for m in SUSPICIOUS_MARKERS if m in lower]
+    hits = [m for m in SUSPICIOUS_MARKERS if m in lower]
+    hits.extend(label for label, pattern in SUSPICIOUS_PATTERNS if re.search(pattern, lower))
+    return hits
 
 
 def review_paper(paper_text, model=None):
