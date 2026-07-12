@@ -1,5 +1,5 @@
 from generator.experiment_runner import run_experiment
-from utils.llm import call_llm, default_strong_model
+from utils.llm import call_llm, default_middle_model, default_strong_model
 from utils.prompts import load_prompt
 
 SYSTEM_PROMPT = load_prompt("paper_system.md")
@@ -34,7 +34,13 @@ def draft_experiment_code(idea, model=None):
         "RESULT_JSON= followed by valid JSON containing the experiment configuration "
         "and metrics."
     )
-    result = call_llm(SYSTEM_PROMPT, user, model=model, schema=CODE_SCHEMA, schema_name="submit_code")
+    result = call_llm(
+        SYSTEM_PROMPT,
+        user,
+        model=model or default_middle_model(),
+        schema=CODE_SCHEMA,
+        schema_name="submit_code",
+    )
     return result["code"]
 
 

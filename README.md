@@ -56,9 +56,10 @@ python3 -m venv .venv
 cp .env.example .env   # fill in OPENAI_API_KEY or ANTHROPIC_API_KEY
 ```
 
-The default OpenAI path uses the Responses API with strict structured outputs. The
-default model is the fast GPT-5.6 Luna tier and the final synthesis uses GPT-5.6 Sol;
-override them in `.env` if the event account exposes different models.
+The default OpenAI path uses the Responses API with strict structured outputs. Models
+are deliberately tiered: GPT-5.6 Luna handles high-volume idea/review calls, GPT-5.6
+Terra handles experiment-code and revision calls, and GPT-5.6 Sol performs final
+synthesis. Override them in `.env` if the event account exposes different models.
 
 ## Usage
 

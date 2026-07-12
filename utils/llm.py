@@ -26,6 +26,14 @@ def default_strong_model():
     return os.environ.get("OPENAI_STRONG_MODEL", "gpt-5.6-sol")
 
 
+def default_middle_model():
+    """Balanced model for code generation and revision passes."""
+    provider = os.environ.get("LLM_PROVIDER", "anthropic")
+    if provider == "anthropic":
+        return os.environ.get("ANTHROPIC_MIDDLE_MODEL", default_model())
+    return os.environ.get("OPENAI_MIDDLE_MODEL", "gpt-5.6-terra")
+
+
 def call_llm(system, user, model=None, schema=None, schema_name="output", max_tokens=4096):
     provider = os.environ.get("LLM_PROVIDER", "anthropic")
     if provider == "anthropic":
